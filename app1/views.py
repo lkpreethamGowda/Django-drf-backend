@@ -9,6 +9,10 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import mixins , viewsets
 from django.contrib.auth.models import User
 from rest_framework import status
+from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .filters import ProductFilter
 
 
 
@@ -34,7 +38,10 @@ class ProductViewset(ModelViewSet):
 class ProductSearchViewset(mixins.RetrieveModelMixin,mixins.ListModelMixin,viewsets.GenericViewSet):
     queryset=Product.objects.all()
     serializer_class=ProductSerializer
-    def get_queryset(self):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter
+
+    """def get_queryset(self):
         queryset =  super().get_queryset()
         label = self.request.query_params.get('label')
         product_type = self.request.query_params.get('type')
@@ -55,7 +62,7 @@ class ProductSearchViewset(mixins.RetrieveModelMixin,mixins.ListModelMixin,views
 
         if max_price is not None:
             queryset=queryset.filter(pricing__lte=max_price)
-        return queryset
+        return queryset"""
 
 
 class ReviewViewset(ModelViewSet):
@@ -105,13 +112,35 @@ class CartItemViewset(ModelViewSet):
             queryset=queryset.filter(cart_id=cart_id)
         return queryset
     
+    
+    @action(detail=False, methods=['post'], url_path='add-to-cart')
+    def add_to_cart(self, request):
+        data = request.data.copy()
+        user_id = data.pop('user_id', None)
 
-class AddtoCart(mixins.CreateModelMixin,viewsets.GenericViewSet):
+        if not user_id:
+            return Response({"detail": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            cart = Cart.objects.get(user_id=user_id)
+        except Cart.DoesNotExist:
+            return Response({"detail": "Cart for the user does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        data['cart_id'] = cart.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+"""class AddtoCart(mixins.CreateModelMixin,viewsets.GenericViewSet):
     serializer_class = CartItemSerializer
     queryset= CartItem.objects.all()
 
     def create(self, request, *args, **kwargs):
-        """user_Id= request.user"""
+        #user_Id= request.user
         data=request.data
         user_id=data.pop('user_id')
         
@@ -125,7 +154,7 @@ class AddtoCart(mixins.CreateModelMixin,viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data,status=status.HTTP_201_CREATED,headers=headers)
+        return Response(serializer.data,status=status.HTTP_201_CREATED,headers=headers)"""
 
 
 

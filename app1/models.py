@@ -1,6 +1,7 @@
 from django.db import models
 
 from django.contrib.auth.models import User
+from .constants import label_choices , type_choices , status_choices
 
 # Create your models here.
 
@@ -8,7 +9,6 @@ class UserProfile(models.Model):
     user =models.ForeignKey(User,on_delete=models.CASCADE)
     location = models.CharField(max_length=255, blank=True)
 
-  
 
 class Farmer(models.Model):
     name=models.CharField(max_length=150)
@@ -19,8 +19,7 @@ class Farmer(models.Model):
 
 class Product(models.Model):
     product_name=models.CharField(max_length=50)
-    label_choices=(('Organic','Organic'),('GMO','GMO'),('Pesticides','Pesticides'))
-    type_choices=(('Fruit','Fruit'),('Vegetable','Vegetable'),('Dairy','Dairy'))
+    
     farmer_id=models.ForeignKey(Farmer,blank=False,null=True,on_delete=models.CASCADE)
     image=models.CharField(max_length=255)
     harversted_date=models.DateField()
@@ -56,7 +55,7 @@ class CartItem(models.Model):
 
 
 class Order(models.Model):
-    status_choices=(('Delivered','Delivered'),('Processing','Processing'))
+    
     user_id=models.ForeignKey(User,null=False,blank=False,on_delete=models.CASCADE)
     address=models.CharField(max_length=255)
     amount=models.IntegerField()
@@ -70,6 +69,6 @@ class OrderItem(models.Model):
     quantity=models.IntegerField(null=False)
 
 class Recipe(models.Model):
-    ingridients = models.TextField()
+    ingredients = models.TextField()
     steps=models.TextField()
     tips=models.TextField()
