@@ -18,7 +18,7 @@ router.register(r'orders',views.OrderViewset)# reuturns the orders with respect 
 router.register(r'addorders',views.OrderAddViewset, basename="addOrder")  # Adding orders
 router.register(r'searchProducts',views.ProductSearchViewset, basename="searchProducts")# search the product based on product_name and filter = label,type and price range
 router.register(r'recipes',views.RecipeViewset, basename='recipes') 
-router.register(r'DeleteCartItem',views.DeleteCartItem, basename="DeleteCartItem") # delete the cartItem
+router.register(r'deleteCartItems',views.DeleteCartItem, basename="DeleteCartItem") # delete the cartItem
 
 
 
